@@ -2,6 +2,7 @@ const childProcess = require('child_process')
 const fs = require('fs')
 const path = require('path')
 const { parseKeymap } = require('./keymap')
+const { parseMacro } = require('./macro')
 
 const ZMK_PATH = path.join(__dirname, '..', '..', '..', 'zmk-config')
 const KEYBOARD = 'dactyl'
@@ -14,6 +15,9 @@ const EMPTY_KEYMAP = {
   layers: [[]]
 }
 
+const EMPTY_MACRO = {
+}
+
 function loadBehaviors() {
   return JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'zmk-behaviors.json')))
 }
@@ -24,7 +28,8 @@ function loadKeycodes() {
 
 function loadLayout (layout = 'LAYOUT') {
   const layoutPath = path.join(ZMK_PATH, 'config', 'info.json')
-  return JSON.parse(fs.readFileSync(layoutPath)).layouts[layout].layout
+  var layout = JSON.parse(fs.readFileSync(layoutPath)).layouts[layout].layout
+  return layout;
 }
 
 function loadKeymap () {
@@ -33,7 +38,17 @@ function loadKeymap () {
     ? JSON.parse(fs.readFileSync(keymapPath))
     : EMPTY_KEYMAP
 
-  return parseKeymap(keymapContent)
+  var keymap = parseKeymap(keymapContent)
+  return keymap
+}
+
+function loadMacro () {
+  const macroPath = path.join(ZMK_PATH, 'config', 'macros.dtsi')
+  const macroContent = fs.existsSync(macroPath)
+     ? fs.readFileSync(macroPath, {encoding:'utf8'})
+     : EMPTY_MACRO
+    
+  return parseMacro(macroContent)
 }
 
 function findKeymapFile () {
@@ -57,10 +72,26 @@ function exportKeymap (generatedKeymap, flash, callback) {
   return childProcess.execFile('git', ['status'], { cwd: ZMK_PATH }, callback)
 }
 
+function exportMacro(macroJSON, flash, callback) {
+  const macroPath = path.join(ZMK_PATH, 'config')
+
+  fs.existsSync(macroPath) || fs.mkdirSync(macroPath)
+  fs.writeFileSync(path.join(macroPath, 'macros.dtsi'), macroJSON)
+
+  // Note: This isn't really helpful. In the QMK version I had this actually
+  // calling `make` and piping the output in realtime but setting up a ZMK dev
+  // environment proved to be more complex than I had patience for, so for now
+  // I'm writing changes to a zmk-config repo and counting on the predefined
+  // GitHub action to actually compile.
+  return childProcess.execFile('git', ['status'], { cwd: ZMK_PATH }, callback)
+}
+
 module.exports = {
   loadBehaviors,
   loadKeycodes,
   loadLayout,
   loadKeymap,
-  exportKeymap
+  exportKeymap,
+  loadMacro,
+  exportMacro
 }

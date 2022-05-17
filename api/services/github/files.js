@@ -17,8 +17,9 @@ async function fetchKeyboardFiles (installationId, repository, branch) {
   const { data: { token: installationToken } } = await auth.createInstallationToken(installationId)
   const { data: info } = await fetchFile(installationToken, repository, 'config/info.json', { raw: true, branch })
   const keymap = await fetchKeymap(installationToken, repository, branch)
+  const macro = await fetchMacro(installationToken, repository, branch)
   const originalCodeKeymap = await findCodeKeymap(installationToken, repository, branch)
-  return { info, keymap, originalCodeKeymap }
+  return { info, keymap, macro, originalCodeKeymap }
 }
 
 async function fetchKeymap (installationToken, repository, branch) {
@@ -40,6 +41,20 @@ async function fetchKeymap (installationToken, repository, branch) {
   }
 }
 
+async function fetchMacro (installationToken, repository, branch) {
+  try {
+    const { data : macro } = await fetchFile(installationToken, repository, 'config/macros.dtsi', { raw: true, branch })
+    return macro
+  } catch (err) {
+    if (err instanceof MissingRepoFile) {
+      return {
+      }
+    } else {
+      throw err
+    }
+  }
+}
+
 async function fetchFile (installationToken, repository, path, options = {}) {
   const { raw = false, branch = null } = options
   const url = `/repos/${repository}/contents/${path}`
@@ -49,7 +64,11 @@ async function fetchFile (installationToken, repository, path, options = {}) {
     params.ref = branch
   }
 
-  const headers = { Accept: raw ? 'application/vnd.github.v3.raw' : 'application/json' }
+  var extension = "json";
+  if (path.lastIndexOf('.') > 0)
+    extension = path.substr((path.lastIndexOf('.') +1));
+
+  const headers = { Accept: raw ? 'application/vnd.github.v3.raw' : 'application/' + extension }
   try {
     return await api.request({ url, headers, params, token: installationToken })
   } catch (err) {
@@ -86,11 +105,12 @@ async function findCodeKeymapTemplate (installationToken, repository, branch) {
   }
 }
 
-async function commitChanges (installationId, repository, branch, layout, keymap) {
+async function commitChanges (installationId, repository, branch, layout, keymap, macro) {
   const { data: { token: installationToken } } = await auth.createInstallationToken(installationId)
   const template = await findCodeKeymapTemplate(installationToken, repository, branch)
 
   const generatedKeymap = zmk.generateKeymap(layout, keymap, template)
+  const generatedMacro = zmk.generateMacro(macro)
 
   const originalCodeKeymap = await findCodeKeymap(installationToken, repository, branch)
   const { data: {sha, commit} } = await api.request({ url: `/repos/${repository}/commits/${branch}`, token: installationToken })
@@ -113,6 +133,12 @@ async function commitChanges (installationId, repository, branch, layout, keymap
           mode: MODE_FILE,
           type: 'blob',
           content: generatedKeymap.json
+        },
+        {
+          path: 'config/macros.dtsi',
+          mode: MODE_FILE,
+          type: 'blob',
+          content: generatedMacro
         }
       ]
     }

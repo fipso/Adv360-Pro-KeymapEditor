@@ -71,11 +71,13 @@ function parseKeyBinding(binding) {
 }
 
 function parseKeymap (keymap) {
-  return Object.assign({}, keymap, {
+  var parse = Object.assign({}, keymap, {
     layers: keymap.layers.map(layer =>  {
       return layer.map(parseKeyBinding)
     })
   })
+
+  return parse
 }
 
 function generateKeymap (layout, keymap, template) {

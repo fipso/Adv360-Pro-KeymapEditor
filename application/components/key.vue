@@ -82,7 +82,7 @@ export default {
   },
   data () {
     return {
-      editing: null
+      editing: null,
     }
   },
   inject: ['getSearchTargets', 'getSources'],
@@ -95,6 +95,7 @@ export default {
       function getSourceValue(value, as) {
         if (as === 'command') return commands[value]
         if (as === 'raw' || as.enum) return { code: value }
+        if (as === 'macro') return { code: value }
         return sources[as][value]
       }
 
@@ -180,8 +181,18 @@ export default {
       event.target.classList.remove('highlight')
     },
     handleSelectCode(event) {
-      this.editing = pick(event, ['target', 'codeIndex', 'code', 'param'])
-      this.editing.targets = this.getSearchTargets(this.editing.param, this.value)
+      if (event && event.param == "macro")
+      {
+        this.editing = pick(event, ['target', 'codeIndex', 'macro', 'param'])
+        this.editing.isMacro = true;
+        this.editing.targets = this.getSearchTargets(this.editing.param, this.value)
+      }
+      else
+      {
+        this.editing = pick(event, ['target', 'codeIndex', 'code', 'param'])
+        this.editing.isMacro = false;
+        this.editing.targets = this.getSearchTargets(this.editing.param, this.value)
+      }
     },
     handleSelectBehaviour(event) {
       this.editing = {

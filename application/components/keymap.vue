@@ -16,7 +16,7 @@ export default {
     'layer-selector': LayerSelector,
     'keyboard-layout': KeyboardLayout
   },
-  props: ['layout', 'keymap'],
+  props: ['layout', 'keymap', 'macro'],
   emits: ['update'],
   inject: [
     'keycodes',
@@ -52,6 +52,7 @@ export default {
         kc: this.indexedKeycodes,
         code: this.indexedKeycodes,
         mod: keyBy(filter(this.keycodes, 'isModifier'), 'code'),
+        macro: this.macro,
         behaviours: this.indexedBehaviours,
         layer: keyBy(this.availableLayers, 'code')
       }
@@ -78,6 +79,8 @@ export default {
           return this.behaviours
         case 'layer':
           return this.availableLayers
+        case 'macro':
+          return this.macro
         case 'mod':
           return filter(this.keycodes, 'isModifier')
         case 'command':
@@ -126,7 +129,14 @@ export default {
       ]
 
       this.$emit('update', { ...this.keymap, layers })
-    }
+    },
+    handleDeleteLayer(layerIndex) {
+      const layer_names = [...this.keymap.layer_names];
+      layer_names.splice(layerIndex, 1);
+      const layers = [...this.keymap.layers];
+      layers.splice(layerIndex, 1);
+      this.$emit("update", { ...this.keymap, layers, layer_names });
+    },
   }
 }
 </script>
@@ -138,6 +148,7 @@ export default {
     :activeLayer="activeLayer"
     @select="activeLayer = $event"
     @new-layer="handleCreateLayer"
+    @delete-layer="handleDeleteLayer($event)"
   />
   <div :style="getWrapperStyle()" v-bind="$attrs">
     <keyboard-layout

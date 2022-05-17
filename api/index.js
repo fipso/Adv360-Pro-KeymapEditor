@@ -1,4 +1,4 @@
-require('dotenv/config')
+require('dotenv').config()
 const express = require('express')
 const bodyParser = require('body-parser')
 const cors = require('cors')
@@ -11,7 +11,7 @@ const app = express()
 
 app.use(bodyParser.json())
 app.use(cors({
-  origin: 'https://polarityworks.github.io'
+  origin: 'https://kinesiscorporation.github.io' //origin: 'http://localhost:8080'
 }))
 
 if (process.env.ENABLE_DEV_SERVER) {

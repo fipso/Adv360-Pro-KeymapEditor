@@ -33,11 +33,11 @@ export default {
     async loadAppData () {
       const [ keycodes, behaviours ] = await Promise.all([
         loadKeycodes(),
-        loadBehaviours()
+        loadBehaviours(),       
       ])
 
       this.keycodes.splice(0, this.keycodes.length, ...keycodes)
-      this.behaviours.splice(0, this.behaviours.length, ...behaviours)
+      this.behaviours.splice(0, this.behaviours.length, ...behaviours)     
       Object.assign(this.indexedKeycodes, keyBy(this.keycodes, 'code'))
       Object.assign(this.indexedBehaviours, keyBy(this.behaviours, 'code'))
     }
