@@ -49,6 +49,9 @@ function parseKeyBinding(binding) {
     return { value, params }
   }
 
+  if (!binding || (binding === ""))
+    return null;
+
   const value = binding.match(/^(&.+?)\b/)[1]
   const params = filter(binding.replace(/^&.+?\b\s*/, '')
     .split(' '))
