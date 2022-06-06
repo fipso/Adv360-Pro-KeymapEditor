@@ -16,6 +16,7 @@ import ValuePicker from './value-picker.vue'
 import InputDialog from './input-dialog.vue'
 import pick from 'lodash/pick'
 import cloneDeep from 'lodash/cloneDeep'
+import Key from './key.vue'
 
 function makeIndex (tree) {
   const index = []
@@ -33,7 +34,8 @@ export default {
   components: {
     Modal,
     ValuePicker,
-    InputDialog
+    InputDialog,
+    'key-thing': Key,
   },
   props: {
     target: Object,
@@ -62,7 +64,8 @@ export default {
   ],
   provide() {
     return {
-
+      getSearchTargets: this.getSearchTargets,
+      getSources: this.sources
     }
   },
   data() {
@@ -75,7 +78,8 @@ export default {
       editing: null,
       editingMacro: false,
       saving: false,
-      addMacro: false
+      addMacro: false,
+      macroMax: 15
     }
   },
 mounted() {
@@ -85,6 +89,50 @@ unmounted() {
   document.body.removeEventListener('click', this.handleClickOutside, true)
 },
 computed: {
+  normalized() {
+    const { value, params } = this
+    const sources = this.sources()
+    const commands = keyBy(this.behaviour.commands, 'code')
+
+    function getSourceValue(value, as) {
+      if (as === 'command') return commands[value]
+      if (as === 'raw' || as.enum) return { code: value }
+      if (as === 'macro') return { code: value }
+      return sources[as][value]
+    }
+
+    function normalize(node, as) {
+      if (!node) {
+        return { value: undefined, params: [] }
+      }
+      const { value, params } = node
+      const source = getSourceValue(value, as)
+
+      return {
+        value,
+        source,
+        params: get(source, 'params', []).map((as, i) => (
+          normalize(params[i], as)
+        ))
+      }
+    }
+
+    return {
+      value,
+      source: this.behaviour,
+      params: this.behaviourParams.map((as, i) => (
+        normalize(params[i], as)
+      ))
+    }
+  },
+  behaviour() {
+    const bind = this.value
+    const sources = this.sources()
+    return get(sources, ['behaviours', bind])
+  },
+  behaviourParams() {
+    return getBehaviourParams(this.params, this.behaviour)
+  },
   macro() {
     const { query, choices } = this
     const options = { key: this.searchKey, limit: 30 }
@@ -101,6 +149,9 @@ computed: {
       ...result.obj,
       search: result
     }))
+  },
+  key() {
+    return this.selectedMacro.keys
   },
   // behaviour() {
   //   const bind = this.value
@@ -127,7 +178,17 @@ computed: {
     }
   },
   methods: {
-    getSources() {
+    // getSources() {
+    //   return {
+    //     kc: this.indexedKeycodes,
+    //     code: this.indexedKeycodes,
+    //     mod: keyBy(filter(this.keycodes, 'isModifier'), 'code'),
+    //     macro: this.macro,
+    //     behaviours: this.indexedBehaviours,
+    //     layer: keyBy(this.availableLayers, 'code')
+    //   }
+    // },
+    sources() {
       return {
         kc: this.indexedKeycodes,
         code: this.indexedKeycodes,
@@ -299,24 +360,31 @@ computed: {
       this.addMacro = true
     },
     addKey(event) {
-      const newObject = {};
-      newObject.target = this.$refs.items;
-      newObject.codeIndex = 1;
-      newObject.param = 'code';
+      // const newObject = {};
+      // newObject.target = this.$refs.items;
+      // newObject.codeIndex = 1;
+      // newObject.param = 'code';
 
-      this.editing = pick(newObject,  ['target', 'codeIndex', 'code', 'param'])
-      this.editing.insertIdx = -1
-      this.editing.targets = this.getSearchTargets(this.editing.param, this.value)
+      // this.editing = pick(newObject,  ['target', 'codeIndex', 'code', 'param'])
+      // this.editing.insertIdx = -1
+      // this.editing.targets = this.getSearchTargets(this.editing.param, this.value)
+
+      const newObject = { value: "&kp", params: []};
+      this.selectedMacro.textArray.push('')
+      this.selectedMacro.keys.push(newObject)
     },
     insertKey(idx) {
-      const newObject = {};
-      newObject.target = this.$refs.items;
-      newObject.codeIndex = 1;
-      newObject.param = 'code';
+      // const newObject = {};
+      // newObject.target = this.$refs.items;
+      // newObject.codeIndex = 1;
+      // newObject.param = 'code';
 
-      this.editing = pick(newObject,  ['target', 'codeIndex', 'code', 'param'])
-      this.editing.insertIdx = idx
-      this.editing.targets = this.getSearchTargets(this.editing.param, this.value)
+      // this.editing = pick(newObject,  ['target', 'codeIndex', 'code', 'param'])
+      // this.editing.insertIdx = idx
+      // this.editing.targets = this.getSearchTargets(this.editing.param, this.value)
+      const newObject = { value: "&kp", params: []};
+      this.selectedMacro.textArray.splice(idx, 0, '')
+      this.selectedMacro.keys.splice(idx, 0, newObject)
     },
     createPromptMessage(param) {
       const promptMapping = {
@@ -334,9 +402,12 @@ computed: {
       return promptMapping[param] || promptMapping.keycode
     },
     handleSelectKey(source) {
-      // const { normalized } = this
+      const { normalized } = this
       const { codeIndex } = this.editing
-      const updated = cloneDeep(this.normalized('&kp', source.params))
+      // const updated = cloneDeep(this.normalized('&kp', source.params))
+      // const index = makeIndex(updated)
+      // const targetCode = index[codeIndex]
+      const updated = cloneDeep(normalized)
       const index = makeIndex(updated)
       const targetCode = index[codeIndex]
 
@@ -372,7 +443,7 @@ computed: {
       if (as === 'command') return commands[value]
       if (as === 'raw' || as.enum) return { code: value }
       if (as === 'macro') return { code: value }
-      const sources = this.getSources()
+      const sources = this.sources()
 
       return sources[as][value]
     },
@@ -391,25 +462,6 @@ computed: {
         ))
       }
     },
-    normalized(value, params) {
-        //const commands = keyBy(this.behaviour.commands, 'code')
-
-      return {
-        value,
-        source: this.behaviour(value),
-        params: this.behaviourParams(value, this.behaviour(value)).map((as, i) => (
-          this.normalize(params[i], as)
-        ))
-      }
-    },
-    behaviour(value) {
-      const bind = value
-      const sources = this.getSources()
-      return get(sources, ['behaviours', bind])
-    },
-    behaviourParams(params, behaviour) {
-      return getBehaviourParams(params, behaviour)
-    },
     handleAddMacro(macroName) {
       var exists = false
 
@@ -423,7 +475,7 @@ computed: {
       if (!exists)
       {
         var newMacro = {}
-        newMacro.code = macroName.toLowerCase()
+        newMacro.code = macroName.toLowerCase().trim().replace(' ', '_').substring(0, this.macroMax)
         newMacro.label = "macro_" + newMacro.code
         newMacro.keys = [];
         newMacro.textArray = [];
@@ -431,6 +483,10 @@ computed: {
 
         this.addMacro = false
       }
+    },
+    handleUpdateBind(keyIndex, updatedBinding) {
+      this.key[keyIndex] = updatedBinding
+      this.$emit('macroupdate')
     }
   }
 }
@@ -464,85 +520,23 @@ computed: {
       </div>
       <div id="macroItems" ref="items">
           <div v-if="selectedMacro" id="macroContainer">
-          <div v-for="(item, i) in selectedMacro.textArray" :key="`item-key-${i}`" class="macroKeyContainer">
-            <span class="insertKey" @click="insertKey(i)" title="Insert key here"> + </span>
-            <div class="keyMacro"
-                :class="[uClass, hClass]"
-                :data-label="item"
-                :data-u="size.u"
-                :data-h="size.h"
-                :data-simple="item.length < 4"
-                :data-long="item.length >= 4"
-                :style="positioningStyle"
-                @mouseover="onMouseOver"
-                @mouseleave="onMouseLeave"
-                >
-                <span class="close" @click="deleteKey(i)">X</span>
-                <!-- <span v-text="item" class="macroText"/> -->
-                <span>
-                  <span
-                    class="code"
-                    v-text="item">
-                  </span>
-                </span>
-                
-                </div>
-
+            <div v-for="(item, i) in selectedMacro.keys" :key="`item-key-${i}`" class="macroKeyContainer">
+              <span class="addKey" @click="insertKey(i)" title="Insert key here"> + </span>
+                  <key-thing
+                    :key="item"
+                    :position="position(item)"
+                    :rotation="rotation(item)"
+                    :size="size(item)"
+                    :label="item.label"
+                    :value="item.value"
+                    :params="item.params"
+                    @update="handleUpdateBind(i, $event)"
+                  />
             </div>
+            <span class="addKey" @click="addKey" title="Add key here"> + </span>
           </div>
-          <!-- <ul>
-              <li
-                  :key="`item-key-${i}`"
-                  :class="{ highlighted: highlighted === i }"
-                  :title="item"
-                  :data-item-index="i"
-                  v-for="(item, i) in selectedMacro.textArray"              
-              >
-                  <span v-text="item" class="key"
-                      :class="[uClass, hClass]"
-                      :data-label="item"
-                      :data-u="size.u"
-                      :data-h="size.h"
-                      :data-simple="isSimple"
-                      :data-long="isComplex"
-                      :style="positioningStyle"
-                      />
-              </li>
-          </ul> -->
-        <!-- <textarea v-model="selectedMacro" class="macroText" disabled>  
-        </textarea> -->
-      </div>
-      <div class="macroActions">
-        <button
-          @click="addKey"
-          :disabled="this.selectedMacro == null"
-          title="Add new key">
-          Add key
-        </button>
-        <!-- <button
-          @click="acceptMacro"
-          title="Done">
-          Done
-        </button>
-        <button
-          @click="cancelMacro"
-          title="Cancel">
-          Cancel
-        </button> -->
       </div>
     </div>
-    <modal v-if="editing">
-      <value-picker
-        :target="editing.target"
-        :value="editing.code"
-        :param="editing.param"
-        :choices="editing.targets"
-        :prompt="createPromptMessage(editing.param)"
-        searchKey="code"
-        @select="handleSelectKey"
-        @cancel="editing = null"
-      />
-    </modal>
     <modal v-if="addMacro">
       <input-dialog
         @accept="handleAddMacro"
@@ -564,6 +558,8 @@ computed: {
 }
 #macroList {
     width: 300px;
+    flex-shrink: 0;
+    flex-grow: 0;
 }
 #macroItems {
     margin-left: 10px;
@@ -574,6 +570,7 @@ computed: {
 }
 #macroContainer {
   display: flex;
+  flex-wrap: wrap;
 }
 .dialog input {
 	display: block;
@@ -627,34 +624,10 @@ ul.macro {
 .macroKeyContainer {
   display: flex;
 }
-.keyMacro {
-	position: relative;
-  margin-right: 5px;
-  height: 50px;
-  width: 50px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-
-	color: #999;
-	background-color: whitesmoke;
-	font-size: 110%;
-	border-radius: 5px;
-  z-index: 9998;
+.key {
+  position: relative !important;
+  margin-bottom: 5px;
 }
-.keyMacro:hover {
-	background-color: var(--hover-selection);
-	transition: 200ms;
-}
-.keyMacro:hover .code, .key:hover .behaviour-binding {
-	color: white;
-}
-.keyMacro > .code {
-	padding: 5px;
-}
-
-.keyMacro[data-simple="true"] { font-size: 100%; }
-.keyMacro[data-long="true"] { font-size: 60%; }
 
 button {
   cursor: pointer;
@@ -708,7 +681,7 @@ button[disabled] {
 	color: var(--hover-selection) !important;
 }
 
-.insertKey {
+.addKey {
   position: relative;
   top: 15px;
   height: 15px;
@@ -717,14 +690,14 @@ button[disabled] {
   transition: 0.3s;
   border: 1px solid;
   border-radius: 50%;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
   padding-bottom: 4px;
 }
 
 /* Change cursor when pointing on button */
-.insertKey:hover,
-.insertKey:focus {
+.addKey:hover,
+.addKey:focus {
     text-decoration: none;
     cursor: pointer;
     color: white;

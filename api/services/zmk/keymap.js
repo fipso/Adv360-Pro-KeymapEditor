@@ -30,7 +30,11 @@ function encodeBindValue(parsed) {
 function encodeKeyBinding(parsed) {
   const { value, params } = parsed
 
-  return `${value} ${params.map(encodeBindValue).join(' ')}`.trim()
+  //For macro assignment, replace add underscore between &macro + name
+  if (value == "&macro")
+    return `${value}_${params.map(encodeBindValue).join(' ')}`.trim()
+  else
+    return `${value} ${params.map(encodeBindValue).join(' ')}`.trim()
 }
 
 function encodeKeymap(parsedKeymap) {
@@ -61,6 +65,10 @@ function parseKeyBinding(binding) {
 
     return { value, params }
   }
+
+  //For macro assignment, replace macro_ with macro (with space)
+  if (binding.indexOf("macro_"))
+  binding = binding.replace("&macro_", "&macro ")
 
   const value = binding.match(/^(&.+?)\b/)[1]
   const params = filter(binding.replace(/^&.+?\b\s*/, '')

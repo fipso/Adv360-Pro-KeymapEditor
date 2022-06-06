@@ -31,7 +31,8 @@ export default {
       query: null,
       highlighted: null,
       showAll: false,
-      selectedMacro: ''
+      selectedMacro: '',
+      macroMax: 15
     }
   },
   mounted() {
@@ -152,6 +153,7 @@ export default {
       ref="searchBox"
       type="text"
       :value="query !== null ? query : value"
+      :maxlength="macroMax"
       @keypress="handleKeyPress"
     />
     <ul class="macro">

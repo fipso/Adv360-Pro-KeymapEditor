@@ -84,4 +84,4 @@ qmk_firmware
 zmk-config
 
 private-key.pem
-.env
+.env*

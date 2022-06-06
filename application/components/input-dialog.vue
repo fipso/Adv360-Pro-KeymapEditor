@@ -7,6 +7,7 @@ export default {
   data() {
     return {
       inputVal: "",
+      macroMax: 15
     }
   },
   mounted() {
@@ -46,7 +47,8 @@ export default {
       <input
         ref="inputBox"
         type="text"
-        v-model="this.inputVal"      
+        v-model="this.inputVal"   
+        :maxlength="this.macroMax"   
       />
     </div>
     <button

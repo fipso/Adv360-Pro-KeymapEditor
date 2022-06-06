@@ -36,8 +36,8 @@ module.exports = {
       ENABLE_LOCAL: false,
       ENABLE_GITHUB: true,
       GITHUB_APP_NAME: 'Adv360ProApp',
-      API_BASE_URL: 'https://adv360-pro-api.herokuapp.com', // dev value: 'http://localhost:8080' // prod value: 'https://adv360-pro-api.herokuapp.com/'
-      APP_BASE_URL: 'https://kinesiscorporation.github.io/Adv360-Pro-GUI'// dev value: 'http://localhost:8080' // prod value: 'https://kinesiscorporation.github.io/Adv360-Pro-GUI/'
+      API_BASE_URL: 'http://localhost:8080', // dev value: 'http://localhost:8080' // prod value: 'https://adv360-pro-api.herokuapp.com'
+      APP_BASE_URL: 'http://localhost:8080'// dev value: 'http://localhost:8080' // prod value: 'https://kinesiscorporation.github.io/Adv360-Pro-GUI/'
     }),
     new HtmlWebpackPlugin({ template: 'index.html' }),
     new VueLoaderPlugin()
