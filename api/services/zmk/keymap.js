@@ -29,12 +29,17 @@ function encodeBindValue(parsed) {
 
 function encodeKeyBinding(parsed) {
   const { value, params } = parsed
-
+  var paramsValue = params.map(encodeBindValue).join(' ');
   //For macro assignment, replace add underscore between &macro + name
   if (value == "&macro")
-    return `${value}_${params.map(encodeBindValue).join(' ')}`.trim()
+  {
+    if (paramsValue !== '')
+      return `${value}_${paramsValue}`.trim()
+    else
+      return `&none`
+  }
   else
-    return `${value} ${params.map(encodeBindValue).join(' ')}`.trim()
+    return `${value} ${paramsValue}`.trim()
 }
 
 function encodeKeymap(parsedKeymap) {
