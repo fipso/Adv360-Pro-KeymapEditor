@@ -72,8 +72,8 @@ function parseKeyBinding(binding) {
   }
 
   //For macro assignment, replace macro_ with macro (with space)
-  if (binding.indexOf("macro_"))
-  binding = binding.replace("&macro_", "&macro ")
+  if (binding.indexOf("&macro_") !== -1)
+    binding = binding.replace("&macro_", "&macro ")
 
   const value = binding.match(/^(&.+?)\b/)[1]
   const params = filter(binding.replace(/^&.+?\b\s*/, '')
