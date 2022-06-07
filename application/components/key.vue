@@ -17,6 +17,7 @@
       class="behaviour-binding"
       @click.stop="handleSelectBehaviour"
     />
+    <span v-if="showDel" class="deleteKey" @click="handleDelete">X</span>
     <key-paramlist
       :root="true"
       :index="index"
@@ -71,9 +72,10 @@ export default {
     'size',
     'label',
     'value',
-    'params'
+    'params',
+    'showDel'
   ],
-  emits: ['update'],
+  emits: ['update', 'delete'],
   components: {
     'key-value': KeyValue,
     'key-paramlist': KeyParamlist,
@@ -218,6 +220,10 @@ export default {
 
       this.editing = null
       this.$emit('update', pick(updated, ['value', 'params']))
+    },
+    handleDelete() {
+      this.editing = null
+      this.$emit('delete')
     }
   }
 }
@@ -267,4 +273,27 @@ export default {
   border-radius: 5px 0;
   opacity: 1;
 }
+
+.deleteKey {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  z-index:9999;
+  font-size: 10px;
+  font-weight: bold;
+  transition: 0.3s;
+  border: 1px solid;
+  border-radius: 50%;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+/* Change cursor when pointing on button */
+.deleteKey:hover,
+.deleteKey:focus {
+    text-decoration: none;
+    cursor: pointer;
+    background-color: #ffffff;
+}
+
 </style>

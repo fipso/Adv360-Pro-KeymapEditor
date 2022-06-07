@@ -7,8 +7,6 @@ const keyBy = require('lodash/keyBy')
 const map = require('lodash/map')
 const uniq = require('lodash/uniq')
 
-const { renderTable } = require('./layout')
-const defaults = require('./defaults')
 const { INSPECT_MAX_BYTES } = require('buffer')
 
 class MacroValidationError extends Error {

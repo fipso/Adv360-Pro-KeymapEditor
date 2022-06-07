@@ -1,33 +1,17 @@
 <script>
 import filter from 'lodash/filter'
 import get from 'lodash/get'
-import isEmpty from 'lodash/isEmpty'
 import keyBy from 'lodash/keyBy'
-import times from 'lodash/times'
 import fuzzysort from 'fuzzysort'
 import { getKeyStyles } from '../key-units'
 
 import { getBehaviourParams } from '../keymap'
 import { getKeyBoundingBox } from '../key-units'
-import KeyValue from './key-value.vue'
-import KeyParamlist from './key-paramlist.vue'
 import Modal from './modal.vue'
 import ValuePicker from './value-picker.vue'
 import InputDialog from './input-dialog.vue'
-import pick from 'lodash/pick'
-import cloneDeep from 'lodash/cloneDeep'
 import Key from './key.vue'
 
-function makeIndex (tree) {
-  const index = []
-  ;(function traverse(tree) {
-    const params = tree.params || []
-    index.push(tree)
-    params.forEach(traverse)
-  })(tree)
-
-  return index
-}
 export default {
   name: 'macro',
   emits: ['macroupdate'],
@@ -82,12 +66,6 @@ export default {
       macroMax: 15
     }
   },
-mounted() {
-    document.body.addEventListener('click', this.handleClickOutside, true)
-},
-unmounted() {
-  document.body.removeEventListener('click', this.handleClickOutside, true)
-},
 computed: {
   normalized() {
     const { value, params } = this
@@ -135,32 +113,12 @@ computed: {
   },
   macro() {
     const { query, choices } = this
-    const options = { key: this.searchKey, limit: 30 }
-    const filtered = fuzzysort.go(query, choices, options)
-    const showAll = this.showAll || this.searchThreshold > choices.length
 
-    if (showAll) {
-      return choices
-    } else if (!query) {
-      return choices.slice(0, this.searchThreshold)
-    }
-
-    return filtered.map(result => ({
-      ...result.obj,
-      search: result
-    }))
+    return choices
   },
   key() {
     return this.selectedMacro.keys
   },
-  // behaviour() {
-  //   const bind = this.value
-  //   const sources = this.getSources()
-  //   return get(sources, ['behaviours', bind])
-  // },
-  // behaviourParams() {
-  //   return getBehaviourParams(this.params, this.behaviour)
-  // },
   enableShowAllButton() {
       return (
         !this.showAll &&
@@ -178,16 +136,6 @@ computed: {
     }
   },
   methods: {
-    // getSources() {
-    //   return {
-    //     kc: this.indexedKeycodes,
-    //     code: this.indexedKeycodes,
-    //     mod: keyBy(filter(this.keycodes, 'isModifier'), 'code'),
-    //     macro: this.macro,
-    //     behaviours: this.indexedBehaviours,
-    //     layer: keyBy(this.availableLayers, 'code')
-    //   }
-    // },
     sources() {
       return {
         kc: this.indexedKeycodes,
@@ -207,10 +155,7 @@ computed: {
       return fuzzysort.highlight(result)
     },
     handleClickResult(result, idx) {
-      //Update selected macro
-      //this.updateMacro()
-
-      this.selectedMacro = result //cloneDeep(result)//.textArray.toString()
+      this.selectedMacro = result 
       this.selectedIdx = idx; 
     },
     handleKeyPress(event) {
@@ -222,12 +167,6 @@ computed: {
       if (this.macro.length > 0 && this.highlighted !== null) {
         this.handleClickResult(this.macro[this.highlighted])
       }
-    },
-    handleHighlightNext() {
-      //this.setHighlight(0, 1)
-    },
-    handleHighlightPrev() {
-      //this.setHighlight(this.macro.length - 1, -1)
     },
     setHighlight(initial, offset) {
       if (this.macro.length === 0) {
@@ -242,25 +181,6 @@ computed: {
       this.highlighted = this.highlighted === null ? initial : cycle(this.macro, this.highlighted, offset)
       this.scrollIntoViewIfNeeded(this.$el.querySelector(`.macro li[data-result-index="${this.highlighted}`), false)
     },
-    handleClickOutside(event) {
-      // if (!this.$el.contains(event.target)) {
-      //   this.cancel()
-      // }
-    },
-    // acceptMacro() {
-    //   //this.$emit('done')
-    //   this.updateMacro()
-    //   this.$emit('done')
-    // },
-    // cancelMacro() {
-    //   this.$emit('cancel', 'done')
-    // },
-    // updateMacro() {
-    //   if (this.selectedMacro !== null)
-    //   {
-    //     this.macro[this.selectedIdx] = this.selectedMacro
-    //   }
-    // },
     scrollIntoViewIfNeeded (element, alignToTop) {
       const scroll = element.offsetParent.scrollTop
       const height = element.offsetParent.offsetHeight
@@ -314,23 +234,6 @@ computed: {
         padding: '40px'
       }
     },
-    handleUpdateMacro() {
-    //   const original = this.keymap.layers
-    //   const layers = [
-    //     ...original.slice(0, layerIndex),
-    //     updatedLayer,
-    //     ...original.slice(layerIndex + 1)
-    //   ]
-
-    //   this.$emit('update', { ...this.keymap, layers })
-    },
-    // handleDeleteMacro(layerIndex) {
-    //   const layer_names = [...this.keymap.layer_names];
-    //   layer_names.splice(layerIndex, 1);
-    //   const layers = [...this.keymap.layers];
-    //   layers.splice(layerIndex, 1);
-    //   this.$emit("update", { ...this.keymap, layers, layer_names });
-    // },
     uClass() { return `key-${this.size.u}u` },
     hClass() { return `key-${this.size.h}h` },
     positioningStyle() {
@@ -360,28 +263,11 @@ computed: {
       this.addMacro = true
     },
     addKey(event) {
-      // const newObject = {};
-      // newObject.target = this.$refs.items;
-      // newObject.codeIndex = 1;
-      // newObject.param = 'code';
-
-      // this.editing = pick(newObject,  ['target', 'codeIndex', 'code', 'param'])
-      // this.editing.insertIdx = -1
-      // this.editing.targets = this.getSearchTargets(this.editing.param, this.value)
-
       const newObject = { value: "&kp", params: []};
       this.selectedMacro.textArray.push('')
       this.selectedMacro.keys.push(newObject)
     },
     insertKey(idx) {
-      // const newObject = {};
-      // newObject.target = this.$refs.items;
-      // newObject.codeIndex = 1;
-      // newObject.param = 'code';
-
-      // this.editing = pick(newObject,  ['target', 'codeIndex', 'code', 'param'])
-      // this.editing.insertIdx = idx
-      // this.editing.targets = this.getSearchTargets(this.editing.param, this.value)
       const newObject = { value: "&kp", params: []};
       this.selectedMacro.textArray.splice(idx, 0, '')
       this.selectedMacro.keys.splice(idx, 0, newObject)
@@ -400,38 +286,6 @@ computed: {
       }
 
       return promptMapping[param] || promptMapping.keycode
-    },
-    handleSelectKey(source) {
-      const { normalized } = this
-      const { codeIndex } = this.editing
-      // const updated = cloneDeep(this.normalized('&kp', source.params))
-      // const index = makeIndex(updated)
-      // const targetCode = index[codeIndex]
-      const updated = cloneDeep(normalized)
-      const index = makeIndex(updated)
-      const targetCode = index[codeIndex]
-
-      targetCode.value = source.code
-      targetCode.params = []
-      index.forEach(node => {
-        delete node.source
-      })
-      //this.normalize(source, 'code')
-
-      if (this.editing.insertIdx >= 0)
-      {
-        this.selectedMacro.textArray.splice(this.editing.insertIdx, 0, source.code)
-        this.selectedMacro.keys.splice(this.editing.insertIdx, 0, updated)
-      }
-      else
-      {
-        this.selectedMacro.textArray.push(source.code)
-        this.selectedMacro.keys.push(updated)
-      }
-
-      this.editing = null
-
-      this.$emit('macroupdate')
     },
     deleteKey(idx) {
       this.selectedMacro.textArray.splice(idx, 1)
@@ -475,13 +329,14 @@ computed: {
       if (!exists)
       {
         var newMacro = {}
-        newMacro.code = macroName.toLowerCase().trim().replace(' ', '_').substring(0, this.macroMax)
+        newMacro.code = macroName.toLowerCase().trim().replace(/ /g, "_").substring(0, this.macroMax)
         newMacro.label = "macro_" + newMacro.code
         newMacro.keys = [];
         newMacro.textArray = [];
         this.macro.unshift(newMacro)
 
         this.addMacro = false
+        this.$emit('macroupdate')
       }
     },
     handleUpdateBind(keyIndex, updatedBinding) {
@@ -530,7 +385,9 @@ computed: {
                     :label="item.label"
                     :value="item.value"
                     :params="item.params"
+                    :showDel="true"
                     @update="handleUpdateBind(i, $event)"
+                    @delete="deleteKey(i)"
                   />
             </div>
             <span class="addKey" @click="addKey" title="Add key here"> + </span>
