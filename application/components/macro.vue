@@ -155,8 +155,7 @@ computed: {
       return fuzzysort.highlight(result)
     },
     handleClickResult(result, idx) {
-      this.selectedMacro = result 
-      this.selectedIdx = idx; 
+      this.selectMacro(result, idx)
     },
     handleKeyPress(event) {
       setTimeout(() => {
@@ -167,6 +166,11 @@ computed: {
       if (this.macro.length > 0 && this.highlighted !== null) {
         this.handleClickResult(this.macro[this.highlighted])
       }
+    },
+    selectMacro(result, idx) {
+      this.selectedMacro = result 
+      this.selectedIdx = idx
+      this.setHighlight(idx)
     },
     setHighlight(initial, offset) {
       if (this.macro.length === 0) {
@@ -334,6 +338,7 @@ computed: {
         newMacro.keys = [];
         newMacro.textArray = [];
         this.macro.unshift(newMacro)
+        this.selectMacro(newMacro, 0)
 
         this.addMacro = false
         this.$emit('macroupdate')
@@ -348,6 +353,7 @@ computed: {
           var index = this.macro.indexOf(macro);
           if (index !== -1) {
             this.macro.splice(index, 1);
+            this.$emit('macroupdate')
           }
       }     
     }
@@ -375,7 +381,7 @@ computed: {
                   :title="result.label"
                   :data-result-index="i"
                   v-for="(result, i) in macro"
-                  @click="handleClickResult(result, i); setHighlight(i);">
+                  @click="handleClickResult(result, i);">
                   <span v-if="result.search" v-html="highlight(result.search)" />
                   <span v-else v-text="result[searchKey]" />
                   <span class="deleteMacro" @click="deleteMacro(result)" title="Delete this macro">X</span>
