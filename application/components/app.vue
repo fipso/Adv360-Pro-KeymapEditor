@@ -56,6 +56,9 @@ export default {
       if (!this.editingKeymap || !this.editingKeymap.keyboard)
         Object.assign(this.editingKeymap, this.keymap)
 
+      //Remove empty macros
+      this.macro = this.macro.filter(x => x.keys.length > 0)
+
       this.saving = true
       await github.commitChanges(repository, branch, this.layout, this.editingKeymap, this.macro)
       this.saving = false
@@ -66,6 +69,9 @@ export default {
     handleCompile() {    
       if (!this.editingKeymap || !this.editingKeymap.keyboard)
         Object.assign(this.editingKeymap, this.keymap)
+
+      //Remove empty macros
+      this.macro = this.macro.filter(x => x.keys.length > 0)
 
       fetch('/keymap', {
         method: 'POST',

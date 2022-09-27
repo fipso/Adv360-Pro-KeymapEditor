@@ -342,6 +342,14 @@ computed: {
     handleUpdateBind(keyIndex, updatedBinding) {
       this.key[keyIndex] = updatedBinding
       this.$emit('macroupdate')
+    },
+    deleteMacro(macro) {
+      if (confirm("Do you really want to delete " + macro.label + " ?")) {
+          var index = this.macro.indexOf(macro);
+          if (index !== -1) {
+            this.macro.splice(index, 1);
+          }
+      }     
     }
   }
 }
@@ -363,13 +371,14 @@ computed: {
           <ul class="macro">
               <li
                   :key="`result-${i}`"
-                  :class="{ highlighted: highlighted === i }"
+                  :class="{ highlighted: highlighted === i, empty: result.keys.length === 0 }"
                   :title="result.label"
                   :data-result-index="i"
                   v-for="(result, i) in macro"
                   @click="handleClickResult(result, i); setHighlight(i);">
                   <span v-if="result.search" v-html="highlight(result.search)" />
                   <span v-else v-text="result[searchKey]" />
+                  <span class="deleteMacro" @click="deleteMacro(result)" title="Delete this macro">X</span>
               </li>
           </ul>
       </div>
@@ -561,4 +570,31 @@ button[disabled] {
     background-color: var(--hover-selection);
 }
 
+.deleteMacro {
+  float: right;
+  top: 1px;
+  right: 1px;
+  z-index:9999;
+  font-size: 10px;
+  font-weight: bold;
+  transition: 0.3s;
+  border: 1px solid;
+  border-radius: 50%;
+  padding-left: 3px;
+  padding-right: 3px;
+}
+
+/* Change cursor when pointing on button */
+.deleteMacro:hover,
+.deleteMacro:focus {
+    text-decoration: none;
+    cursor: pointer;
+    color: white;
+    background-color: var(--hover-selection);
+}
+
+.empty
+{
+  background-color: red;
+}
 </style>

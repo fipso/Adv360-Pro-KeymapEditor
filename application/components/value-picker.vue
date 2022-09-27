@@ -18,7 +18,7 @@ export default {
     searchKey: String,
     searchThreshold: {
       type: Number,
-      default: 10
+      default: 999
     },
     showAllThreshold: {
       type: Number,
@@ -50,11 +50,8 @@ export default {
       const filtered = fuzzysort.go(query, choices, options)
       const showAll = this.showAll || this.searchThreshold > choices.length
 
-      if (showAll) {
+      if (!query)
         return choices
-      } else if (!query) {
-        return choices.slice(0, this.searchThreshold)
-      }
 
       return filtered.map(result => ({
         ...result.obj,
@@ -145,8 +142,7 @@ export default {
     @keydown.esc.prevent="cancel"
   >
     <p>{{prompt}}</p>
-    <input
-      v-if="choices.length > searchThreshold"
+    <input  
       ref="searchBox"
       type="text"
       :value="query !== null ? query : value"
