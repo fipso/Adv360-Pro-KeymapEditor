@@ -56,8 +56,7 @@ export default {
       if (!this.editingKeymap || !this.editingKeymap.keyboard)
         Object.assign(this.editingKeymap, this.keymap)
 
-      //Remove empty macros
-      this.macro = this.macro.filter(x => x.keys.length > 0)
+      this.fixMacros()
 
       this.saving = true
       await github.commitChanges(repository, branch, this.layout, this.editingKeymap, this.macro)
@@ -70,8 +69,7 @@ export default {
       if (!this.editingKeymap || !this.editingKeymap.keyboard)
         Object.assign(this.editingKeymap, this.keymap)
 
-      //Remove empty macros
-      this.macro = this.macro.filter(x => x.keys.length > 0)
+      this.fixMacros()
 
       fetch('/keymap', {
         method: 'POST',
@@ -93,6 +91,17 @@ export default {
       this.editingKeymap = {}
       this.macroUpdated = false
     },
+    fixMacros()
+    {
+      //Remove empty macros
+      this.macro = this.macro.filter(x => x.keys.length > 0)
+
+      //Remove empty keys
+      this.macro.forEach(element => {    
+        element.keys = element.keys.filter(x => x.params.length > 0)
+        element.textArray = element.textArray.filter(x => x !== "")
+      });
+    },
     openCloseMacroList(event) {
       if (this.macroEdit == null)
       {
@@ -103,6 +112,7 @@ export default {
       {
         this.macroEdit = null
       }
+      this.fixMacros()
     },
     handleAcceptMacro() {
       this.macroEdit = null
