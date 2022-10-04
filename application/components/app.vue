@@ -56,6 +56,7 @@ export default {
       if (!this.editingKeymap || !this.editingKeymap.keyboard)
         Object.assign(this.editingKeymap, this.keymap)
 
+      this.fixKeymap()
       this.fixMacros()
 
       this.saving = true
@@ -69,6 +70,7 @@ export default {
       if (!this.editingKeymap || !this.editingKeymap.keyboard)
         Object.assign(this.editingKeymap, this.keymap)
 
+      this.fixKeymap()
       this.fixMacros()
 
       fetch('/keymap', {
@@ -91,6 +93,19 @@ export default {
       this.editingKeymap = {}
       this.macroUpdated = false
     },
+    fixKeymap()
+    {
+      //Change empty keys to &none
+      this.editingKeymap.layers.forEach(layer => {  
+        layer.forEach(key => {  
+          if (key.value === "&kp" && key.params.length === 0)
+          {
+            key.value = "&none"
+            key.params = []
+          }
+        })
+      });
+    },
     fixMacros()
     {
       //Remove empty macros
@@ -112,7 +127,6 @@ export default {
       {
         this.macroEdit = null
       }
-      this.fixMacros()
     },
     handleAcceptMacro() {
       this.macroEdit = null
