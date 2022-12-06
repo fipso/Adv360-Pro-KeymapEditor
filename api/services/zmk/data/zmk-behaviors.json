@@ -191,5 +191,10 @@
       "code": "BL_DEC",
       "description": "Decreases the brightness of the backlight"
     }]
+  },
+  {
+    "code": "&key_repeat",
+    "name": "Key Repeat",
+    "params": []
   }
 ]
