@@ -32,8 +32,9 @@
   {
     "code": "&caps_word",
     "name": "Caps Word",
-    "params": ["code"],
-  },{
+    "params": []
+  },
+  {
     "code": "&kt",
     "name": "Key Toggle",
     "params": ["code"],
