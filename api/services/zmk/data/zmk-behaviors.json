@@ -87,6 +87,11 @@
     "params": ["layer"]
   },
   {
+    "code": "&to",
+    "name": "To Layer",
+    "params": ["layer"]
+  },
+  {
     "code": "&tog",
     "name": "Toggle Layer",
     "params": ["layer"]
