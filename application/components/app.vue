@@ -98,7 +98,7 @@ export default {
       //Change empty keys to &none
       this.editingKeymap.layers.forEach(layer => {  
         layer.forEach(key => {  
-          if (key.value === "&kp" && key.params.length === 0)
+          if ((key.value === "&kp" || key.value === "&tog") && key.params.length === 0)
           {
             key.value = "&none"
             key.params = []

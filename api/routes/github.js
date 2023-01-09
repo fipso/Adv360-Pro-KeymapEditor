@@ -17,6 +17,7 @@ const { MissingRepoFile, findCodeKeymap } = require('../services/github/files')
 const { parseKeymap, validateKeymapJson, KeymapValidationError } = require('../services/zmk/keymap')
 const { parseMacro, validateMacroJson, MacroValidationError } = require('../services/zmk/macro')
 const { validateInfoJson, InfoValidationError } = require('../services/zmk/layout')
+const { featchRuns } = require('../services/github/installations')
 
 const router = Router()
 
@@ -95,6 +96,19 @@ const getBranches = async (req, res, next) => {
   }
 }
 
+const getRuns = async (req, res, next) => {
+  const { installationId, repository } = req.params
+
+  try {
+    const { data: { token: installationToken } } = await createInstallationToken(installationId)
+    const branches = await featchRuns(installationToken, repository)
+
+    res.json(branches)
+  } catch (err) {
+    next(err)
+  }
+}
+
 const getKeyboardFiles = async (req, res, next) => {
   const { installationId, repository } = req.params
   const { branch } = req.query
@@ -149,6 +163,7 @@ const receiveWebhook = (req, res) => {
 
 router.get('/authorize', authorize)
 router.get('/installation/:installationId/:repository/branches', authenticate, getBranches)
+router.get('/installation/:installationId/:repository/runs', authenticate, getRuns)
 router.get('/installation', authenticate, getInstallation)
 router.get('/keyboard-files/:installationId/:repository', authenticate, getKeyboardFiles)
 router.post('/keyboard-files/:installationId/:repository/:branch', authenticate, updateKeyboardFiles)

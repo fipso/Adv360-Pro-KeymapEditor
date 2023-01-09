@@ -47,9 +47,23 @@
       <button
         v-if="branchName && !loadingKeyboard"
         @click="loadKeyboard"
-        class="fa fa-sync"
-      />
-    </span>
+        title="Load keyboard">
+        <i class="fa fa-sync"></i>
+      </button>
+      <button
+        v-if="branchName && !loadingKeyboard"     
+        @click="browseRepository"
+        title="Open GitHub repository">
+        <i class="fa-brands fa-square-github"></i>
+      </button>
+      <button
+        v-if="branchName && !loadingKeyboard"
+        :disabled="loadingUrl"
+        @click="getFirmware"
+        title="Get firmware files">
+        <i v-if="!loadingUrl" class="fa-regular fa-circle-play"></i>
+        <spinner v-if="loadingUrl" />
+      </button></span>
   </loader>
 </template>
 
@@ -77,7 +91,8 @@ export default {
       loadingBranches: false,
       loadingKeyboard: false,
       loadKeyboardError: null,
-      loadKeyboardWarnings: null
+      loadKeyboardWarnings: null,
+      loadingUrl: false
     }
   },
   created() {
@@ -191,6 +206,36 @@ export default {
       this.branchName = null
       this.loadKeyboardError = null
       this.loadKeyboardWarnings = null
+    },
+    browseRepository() {
+      const available = this.getRepositories()
+      const repository = find(available, { id: this.repoId })
+      window.open(repository.html_url, '_blank');
+    },
+    async getFirmware() {
+      this.loadingUrl = true;
+      const available = this.getRepositories()
+      const repository = find(available, { id: this.repoId })
+      const runs =  await github.fetchRuns(repository)
+      var url = ''
+
+      if (runs && runs.length > 0) {
+        var workflows = runs[0]
+        if (workflows.length > 0) {
+          var lastWorkflow = workflows[0]
+          url = lastWorkflow.html_url
+        }
+      }
+
+      //var git = github
+      if (url !== '')
+      {
+        window.open(url, '_blank');
+      }
+      else
+        alert('No firmware generated yet, commit changes first')
+
+      this.loadingUrl = false;
     }
   },
   computed: {
@@ -209,3 +254,16 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+
+button {
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+button:active {
+  cursor: wait;
+}
+
+</style>

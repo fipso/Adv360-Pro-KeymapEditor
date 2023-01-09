@@ -121,6 +121,15 @@ export class API extends EventEmitter {
     }
   }
 
+  async fetchRuns(repo) {
+    const installation = encodeURIComponent(this.repoInstallationMap[repo.full_name])
+    const repository = encodeURIComponent(repo.full_name)
+    const { data } = await this._request(
+      `/github/installation/${installation}/${repository}/runs`
+    )
+    return data
+  }
+
   commitChanges(repo, branch, layout, keymap, macro) {
     const installation = encodeURIComponent(this.repoInstallationMap[repo])
     const repository = encodeURIComponent(repo)

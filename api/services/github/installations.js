@@ -55,8 +55,24 @@ async function fetchRepoBranches (installationToken, repo) {
   return branches
 }
 
+async function featchRuns (installationToken, repo) {
+  const initialPage = `/repos/${repo}/actions/runs`
+  const runs = []
+  
+  let url = initialPage
+  while (url) {
+    const { headers, data } = await api.request({ url, token: installationToken })
+    const paging = linkHeader.parse(headers.link || '')
+    runs.push(data.workflow_runs)
+    url = paging.get('rel', 'next')?.[0]?.uri
+  }
+
+  return runs
+}
+
 module.exports = {
   fetchInstallations,
   fetchInstallationRepos,
-  fetchRepoBranches
+  fetchRepoBranches,
+  featchRuns
 }
