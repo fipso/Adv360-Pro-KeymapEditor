@@ -72,6 +72,15 @@ export class API extends EventEmitter {
     location.href = `${config.apiBaseUrl}/github/authorize`
   }
 
+  beginLogoutFlow() {
+    localStorage.removeItem('auth_token')
+    this.token = null
+    this.initialized = false
+    this.installations = null
+    this.repositories = null
+    this.repoInstallationMap = null
+  }
+
   beginInstallAppFlow() {
     location.href = `https://github.com/apps/${config.githubAppName}/installations/new`
   }

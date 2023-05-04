@@ -24,7 +24,16 @@ module.exports = {
       {
         test: /\.vue$/,
         loader: 'vue-loader'
-      }
+      },
+      {
+        test: /\.(png|jpe?g|gif|webp)(\?.*)?$/,
+        loader: 'url-loader',     
+        options: {
+          limit: 8192,
+          esModule: false,
+          outputPath: 'assets'
+        },
+      },
     ]
   },
   output: {

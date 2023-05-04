@@ -2,7 +2,7 @@
 <script>
 export default {
   props: ['layers', 'activeLayer', 'onSelect'],
-  emits: ['select', 'new-layer', 'delete-layer'],
+  emits: ['select', 'new-layer', 'delete-layer', 'rename-layer'],
   data() {
     return {
       renaming: false
@@ -35,6 +35,7 @@ export default {
       const input = this.$el.querySelector('.active input.name')
       if (this.renaming && input !== target) {
         this.renaming = false
+        this.$emit('rename-layer')
       }
     }
   }

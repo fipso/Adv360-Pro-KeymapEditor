@@ -1,5 +1,6 @@
 <template>
   <div>
+    <img :src="getImgUrl()" alt="Advantage 360 Professional" class="productImg"/>  
     <selector
       v-model="source"
       label="Source"
@@ -11,8 +12,20 @@
       v-if="source == 'github'"
       @select="handleKeyboardSelected"
     />
+
   </div>
+  
 </template>
+
+<style scoped>
+
+  .productImg {
+    margin-left: 10px;
+    margin-top: 5px;
+    height: 60px;
+  }
+  
+</style>
 
 <script>
 import compact from 'lodash/compact'
@@ -81,6 +94,9 @@ export default {
       })
 
       this.$emit('select', { source, layout, keymap, macro, ...rest })
+    },
+    getImgUrl() { 
+      return require('../assets/product.png')
     }
   }
 }

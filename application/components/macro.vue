@@ -423,6 +423,8 @@ computed: {
 #editMacro {
   margin: 20px;
   width: 80%;
+  position: absolute;
+  bottom: 5px;
 }
 .container {
     display: flex;
@@ -439,6 +441,7 @@ computed: {
     padding: 5px;
     border: black solid 1px;
     border-radius: 10px;
+    background-color: white;
 }
 #macroContainer {
   display: flex;
@@ -465,17 +468,17 @@ ul.macro {
 	overflow: scroll;
 	padding: 4px;
   margin: 4px 0;
-	background: rgba(0, 0, 0, 0.8);
+	background: whitesmoke;
+  color: black;
 	border-radius: 4px;
 }
 .macro li {
 	cursor: pointer;
-	color: white;
 	padding: 5px;
 }
 .macro li:hover, .macro li.highlighted {
-	background: white;
-	color: black;
+  background: var(--hover-selection);
+	color: white;
 }
 .macro li b { color: red; }
 

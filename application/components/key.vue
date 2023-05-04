@@ -1,13 +1,13 @@
 <template>
   <div
     class="key"
-    :class="[uClass, hClass]"
+    :class="[uClass, hClass, outlineClass, backKeyClass]"
     :data-label="label"
     :data-u="size.u"
     :data-h="size.h"
     :data-simple="isSimple"
     :data-long="isComplex"
-    :style="positioningStyle"
+    :style="[positioningStyle, keyBackColor]"
     @mouseover="onMouseOver"
     @mouseleave="onMouseLeave"
   >
@@ -138,6 +138,39 @@ export default {
     },
     uClass() { return `key-${this.size.u}u` },
     hClass() { return `key-${this.size.h}h` },
+    outlineClass() {
+      if (this.behaviour.code === "&kp" || this.behaviour.code === "&none")
+        return 'outlineKP'
+      if (this.behaviour.code === "&mo" || this.behaviour.code === "&lt" || this.behaviour.code === "&to" || this.behaviour.code === "&tog")
+        return 'outlineLayer';
+      else if (this.behaviour.code === "&macro")
+        return 'outlineMacro';
+      else
+        return 'outlineOther';
+    },
+    backKeyClass() {
+      const [first] = this.normalized.params;
+      const type = get(first, 'source.type', '')
+      if (first && this.behaviour.code === "&kp") {
+        if (type == 'EDIT') {
+          return 'typeEdit'
+        }
+        else if (type == 'MEDIA') {
+          return 'typeMedia'
+        }
+        else if (type == 'MOD') {
+          return 'typeMod'
+        }
+        else if (type === 'KB' || type === 'KP')
+        {
+          //leave as is
+        }
+        else
+        {
+          return 'typeOther';
+        }
+      }
+    },
     positioningStyle() {
       return getKeyStyles(this.position, this.size, this.rotation)
     },
@@ -294,6 +327,38 @@ export default {
     text-decoration: none;
     cursor: pointer;
     background-color: #ffffff;
+}
+
+.outlineKP {
+  border: none;
+}
+
+.outlineLayer {
+  border: blue solid 2px;
+}
+
+.outlineMacro {
+  border: yellow solid 2px;
+}
+
+.outlineOther {
+  border: purple solid 2px;
+}
+
+.typeMod {
+  background-color: #DAF7A6;
+}
+
+.typeMedia {
+  background-color: #FCFE68;
+}
+
+.typeEdit {
+  background-color: #BDDCFE;
+}
+
+.typeOther {
+  background-color: #F6CFFF;
 }
 
 </style>

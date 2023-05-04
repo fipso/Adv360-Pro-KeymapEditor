@@ -207,17 +207,17 @@ ul.results {
 	overflow: scroll;
 	padding: 4px;
   margin: 4px 0;
-	background: rgba(0, 0, 0, 0.8);
+	background: whitesmoke;
+  color: black;
 	border-radius: 4px;
 }
 .results li {
 	cursor: pointer;
-	color: white;
 	padding: 5px;
 }
 .results li:hover, .results li.highlighted {
-	background: white;
-	color: black;
+	background: var(--hover-selection);
+	color: white;
 }
 .results li b { color: red; }
 

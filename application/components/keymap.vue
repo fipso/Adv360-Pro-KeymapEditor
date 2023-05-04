@@ -137,6 +137,9 @@ export default {
       layers.splice(layerIndex, 1);
       this.$emit("update", { ...this.keymap, layers, layer_names });
     },
+    handleRenameLayer() {
+      this.$emit('update', { ...this.keymap })
+    }
   }
 }
 </script>
@@ -149,6 +152,7 @@ export default {
     @select="activeLayer = $event"
     @new-layer="handleCreateLayer"
     @delete-layer="handleDeleteLayer($event)"
+    @rename-layer="handleRenameLayer"
   />
   <div :style="getWrapperStyle()" v-bind="$attrs">
     <keyboard-layout

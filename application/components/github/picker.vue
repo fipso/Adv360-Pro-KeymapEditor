@@ -3,7 +3,7 @@
     <template v-slot:loading>
       <spinner />
     </template>
-
+    
     <button v-if="!isGitHubAuthorized()" @click="login">
       <i class="fab fa-github" /> Login with GitHub
     </button>
@@ -44,6 +44,10 @@
         @dismiss="loadKeyboardWarnings = null"
       />
 
+      <button v-else-if="isGitHubAuthorized()" @click="logout">
+        <i class="fab fa-github"></i> Logout
+      </button>
+      
       <button
         v-if="branchName && !loadingKeyboard"
         @click="loadKeyboard"
@@ -145,6 +149,11 @@ export default {
     },
     login() {
       github.beginLoginFlow()
+    },
+    logout() {
+      github.beginLogoutFlow()
+      this.clearSelection()
+      window.location.reload()
     },
     install() {
       github.beginInstallAppFlow()

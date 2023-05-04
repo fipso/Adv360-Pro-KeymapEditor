@@ -148,6 +148,9 @@ export default {
       // }
 
       return promptMapping[param] || promptMapping.keycode
+    },
+    getLogo() {
+      return require('../assets/logo.png')
     }
 
   }
@@ -179,7 +182,7 @@ export default {
       </div>
       <div id="actions">
         <button
-          id="macroList"
+          id="macroListBtn"
           @click="openCloseMacroList">
           <template v-if="macroEdit === null">Edit Macros </template>
           <template v-else>Close Macros</template>
@@ -204,6 +207,9 @@ export default {
         </button>
       </div>
     </template>
+    <div class="logoContainer" v-if="macroEdit === null">
+      <img :src="getLogo()" alt="Kinesis Corporation" class="logoImg"/>
+    </div>
 
   </initialize>
 </template>
@@ -242,4 +248,16 @@ button[disabled] {
   color: royalblue;
 }
 
+.logoContainer {
+    position: absolute;
+    height: 75px;
+    left: 50%;
+    bottom: 5px;
+    transform: translate(-50%, -50%);
+    margin: 0 auto; 
+  }
+  .logoImg {
+    position: relative;
+    height: 75px;
+  }
 </style>
